@@ -1,0 +1,32 @@
+{
+  "name": "secret-console",
+  "version": "1.0.0",
+  "description": "Un programa de consola para guardar credenciales por usuario",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard --fix",
+    "test": "node index.js"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": false,
+    "useTabs": false,
+    "singleQuote": true,
+    "bracketSpacing": true
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "author": "Cabu Vallejos",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "commander": "^5.0.0",
+    "moment": "^2.24.0",
+    "sqlite3": "^4.1.1"
+  },
+  "devDependencies": {
+    "standard": "^14.3.3"
+  }
+}

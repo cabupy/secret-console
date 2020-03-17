@@ -22,6 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^4.0.1",
+    "colors": "^1.4.0",
     "commander": "^5.0.0",
     "moment": "^2.24.0",
     "sqlite3": "^4.1.1"

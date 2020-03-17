@@ -111,7 +111,7 @@ async function createUser(user, pass) {
 }
 
 async function listUsers() {
-  return execSQL('SELECT name from users', [], 'all')
+  return execSQL('SELECT name from users ORDER BY name ASC', [], 'all')
 }
 
 async function createSecret(user_name, name, key_value) {

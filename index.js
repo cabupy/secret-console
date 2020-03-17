@@ -1,10 +1,19 @@
 const { program } = require('commander')
+const colors = require('colors')
 const { createDb } = require('./db')
+
+async function mensajeOk(texto) {
+  console.log(colors.green(texto))
+}
+
+async function mensajeErr(texto) {
+  console.error(colors.red(texto))
+}
 
 async function main() {
 
   const db = await createDb().catch(err => {
-    console.log(`Error al crear la base de datos. Mensaje: ${err.message}`)
+    mensajeErr(`Error al crear la base de datos. Mensaje: ${err.message}`)
     return
   })
 
@@ -17,9 +26,9 @@ async function main() {
     .action(async (user, pass) => {
       try {
         await db.createUser(user, pass)
-        console.log(`User ${user} has been created`)
+        mensajeOk(`User ${user} has been created`)
       } catch (err) {
-        console.error(`Cannot create user: ${user}. Message: ${err.message}.`)
+        mensajeErr(`Cannot create user: ${colors.bgBlack.bold.green(user)}. Message: ${err.message}.`)
       }
     })
 
@@ -29,12 +38,12 @@ async function main() {
     .action(async () => {
       try {
         const results = await db.listUsers()
-        results.forEach(u => {
-          console.log(` * ${u.name}`)
+        results.map((u,i) => {
+          console.log(colors.bgYellow.black(` ${i+1}) ${u.name.padEnd(20,' ')}`))
         })
-        console.log(`Total: ${results.length}`)
+        console.log(colors.bgCyan.black(` Total: ${results.length}  `))
       } catch (err) {
-        console.error(`Cannot list users. Message: ${err.message}.`)
+        mensajeErr(`Cannot list users. Message: ${err.message}.`)
       }
     })  
 
@@ -46,7 +55,7 @@ async function main() {
         await db.createSecret(user_name, name_secret, key_value)
         console.log(`Secret ${name_secret} has been created, for user ${user_name}`)
       } catch (err) {
-        console.error(`Cannot create secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
+        mensajeErr(`Cannot create secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
       }
     })
 
@@ -58,7 +67,7 @@ async function main() {
         await db.updateSecret(user_name, name_secret, key_value)
         console.log(`Secret ${name_secret} has been updated, for user ${user_name}`)
       } catch (err) {
-        console.error(`Cannot update secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
+        mensajeErr(`Cannot update secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
       }
     })
 
@@ -70,7 +79,7 @@ async function main() {
         await db.deleteSecret(user_name, name_secret)
         console.log(`Secret ${name_secret} has been deleted, for user ${user_name}`)
       } catch (err) {
-        console.error(`Cannot delete secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
+        mensajeErr(`Cannot delete secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
       }
     })
 
@@ -83,7 +92,7 @@ async function main() {
         if (s) console.log(` * ${s.name} = ${s.key_value}`)
         else console.log(`Cannot found a key secret for user ${user_name} and secret ${secret_name}.`)
       } catch (err) {
-        console.error(`Cannot get a key secret for user ${user_name} and secret ${secret_name}. Message: ${err.message}.`)
+        mensajeErr(`Cannot get a key secret for user ${user_name} and secret ${secret_name}. Message: ${err.message}.`)
       }
     })
   
@@ -93,12 +102,12 @@ async function main() {
     .action(async (user) => {
       try {
         const results = await db.listSecrets(user)
-        results.forEach(s => {
-          console.log(` * ${s.name}`)
+        results.map((s,i) => {
+          console.log(colors.bgYellow.black(` ${i+1}) ${s.name.padEnd(20,' ')}`))
         })
-        console.log(`Total: ${results.length}`)
+        console.log(colors.bgCyan.black(` Total: ${results.length}  `))
       } catch (err) {
-        console.error(`Cannot list users. Message: ${err.message}.`)
+        mensajeErr(`Cannot list users. Message: ${err.message}.`)
       }
     })
 

@@ -29,10 +29,10 @@ async function main() {
     .action(async () => {
       try {
         const results = await db.listUsers()
-        results.users.forEach(u => {
+        results.forEach(u => {
           console.log(` * ${u.name}`)
         })
-        console.log(`Total: ${results.count}`)
+        console.log(`Total: ${results.length}`)
       } catch (err) {
         console.error(`Cannot list users. Message: ${err.message}.`)
       }
@@ -47,6 +47,30 @@ async function main() {
         console.log(`Secret ${name_secret} has been created, for user ${user_name}`)
       } catch (err) {
         console.error(`Cannot create secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
+      }
+    })
+
+  program
+    .command('updatesecret <user_name> <name_secret> <key_value>')
+    .description('Update a secret for a user')
+    .action(async (user_name, name_secret, key_value) => {
+      try {
+        await db.updateSecret(user_name, name_secret, key_value)
+        console.log(`Secret ${name_secret} has been updated, for user ${user_name}`)
+      } catch (err) {
+        console.error(`Cannot update secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
+      }
+    })
+
+  program
+    .command('deletesecret <user_name> <name_secret>')
+    .description('Delete a secret for a user')
+    .action(async (user_name, name_secret) => {
+      try {
+        await db.deleteSecret(user_name, name_secret)
+        console.log(`Secret ${name_secret} has been deleted, for user ${user_name}`)
+      } catch (err) {
+        console.error(`Cannot delete secret: ${name_secret}, for user ${user_name}. Message: ${err.message}.`)
       }
     })
 

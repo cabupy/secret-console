@@ -45,73 +45,109 @@ async function createDb() {
       createUser,
       listUsers,
       createSecret,
+      updateSecret,
+      deleteSecret,
       listSecrets,
-      getSecret
+      getSecret,
     })
   })
+}
+
+async function runSQL(sql, params) {
+  return new Promise((resolve, reject) => {
+    client
+      .prepare(sql, err => {
+        if (err) reject(err)
+      })
+      .run(params, (err, row) => {
+        if (err) reject(err)
+        resolve()
+      })
+  })
+}
+
+async function execSQL(sql, params, type = 'run') {
+  switch (type) {
+    case 'run':
+      return runSQL(sql, params)
+      break
+    case 'get':
+      return new Promise((resolve, reject) => {
+        client
+          .prepare(sql, err => {
+            if (err) reject(err)
+          })
+          .get(params, (err, row) => {
+            if (err) reject(err)
+            resolve(row)
+          })
+      })
+      break
+    case 'all':
+      return new Promise((resolve, reject) => {
+        client
+          .prepare(sql, err => {
+            if (err) reject(err)
+          })
+          .all(params, (err, rows) => {
+            if (err) reject(err)
+            resolve(rows)
+          })
+      })
+      break
+    default:
+      return runSQL(sql, params)
+      break
+  }
 }
 
 async function createUser(user, pass) {
   const securePass = await bcrypt.hash(pass, 5)
-  return new Promise((resolve, reject) => {
-    const stmt = client.prepare('INSERT INTO users VALUES ( ?, ?, ?)')
-    stmt.run([user, securePass, moment().format('YYYY-MM-DD')], (err, row) => {
-      if (err) reject(err)
-      resolve()
-    })
-  })
+  return execSQL(
+    'INSERT INTO users VALUES ( ?, ?, ?)',
+    [user, securePass, moment().format('YYYY-MM-DD')],
+    'run'
+  )
 }
 
 async function listUsers() {
-  return new Promise((resolve, reject) => {
-    const users = []
-    client.each(
-      'SELECT name FROM users',
-      (err, row) => {
-        if (err) return reject(err)
-        users.push(row)
-      },
-      (err, count) => {
-        if (err) return reject(err)
-        resolve({ count, users })
-      }
-    )
-  })
+  return execSQL('SELECT name from users', [], 'all')
 }
 
 async function createSecret(user_name, name, key_value) {
-  return new Promise((resolve, reject) => {
-    const stmt = client.prepare('INSERT INTO secrets VALUES ( ?, ?, ?, ?)')
-    stmt.run(
-      [user_name, name, key_value, moment().format('YYYY-MM-DD')],
-      (err, row) => {
-        if (err) reject(err)
-        resolve()
-      }
-    )
-  })
+  return execSQL(
+    'INSERT INTO secrets VALUES ( ?, ?, ?, ?)',
+    [user_name, name, key_value, moment().format('YYYY-MM-DD')],
+    'run'
+  )
+}
+
+async function updateSecret(user_name, name, key_value) {
+  return execSQL(
+    'UPDATE secrets SET key_value = ? WHERE user_name = ? AND name = ?',
+    [key_value, user_name, name],
+    'run'
+  )
+}
+
+async function deleteSecret(user_name, name) {
+  return execSQL(
+    'DELETE FROM secrets WHERE user_name = ? AND name = ?',
+    [user_name, name],
+    'run'
+  )
 }
 
 async function listSecrets(user) {
-  return new Promise((resolve, reject) => {
-    const stmt = client.prepare('SELECT name from secrets WHERE user_name = ?')
-    stmt.all(user, (err, rows) => {
-      if (err) reject(err)
-      resolve(rows)
-    })
-  })
+  return execSQL('SELECT name from secrets WHERE user_name = ?', [user], 'all')
 }
 
 async function getSecret(user_name, secret_name) {
-  return new Promise((resolve, reject) => {
-    const stmt = client.prepare(
-      'SELECT name, key_value from secrets WHERE user_name = ? AND name = ?'
-    )
-    stmt.get([user_name, secret_name], (err, row) => {
-      if (err) reject(err)
-      resolve(row)
-    })
-  })
+  return execSQL(
+    'SELECT name, key_value from secrets WHERE user_name = ? AND name = ?',
+    [user_name, secret_name],
+    'get'
+  )
 }
 
 module.exports = {
